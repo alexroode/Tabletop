@@ -1,0 +1,21 @@
+﻿<h3>Log In</h3>
+
+<div class="form-group">
+    <label for="username">Username</label>
+    <input class="form-control" id="username" @bind="username" @bind:event="oninput" />
+</div>
+
+<div class="form-group">
+    <button @onclick="OnLoginClick" disabled="@isDisabled" class="btn btn-primary">Log In</button>
+</div>
+
+@code {
+    private string username;
+    [Parameter] public EventCallback<string> OnLogin { get; set; }
+    async Task OnLoginClick()
+    {
+        await OnLogin.InvokeAsync(username);
+    }
+
+    private bool isDisabled => string.IsNullOrEmpty(username);
+}

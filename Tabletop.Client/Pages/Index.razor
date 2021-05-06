@@ -1,0 +1,22 @@
+﻿@page "/"
+
+@if (isLoggedIn)
+{
+    <p>Logged in as <strong>@username</strong></p>
+    <Chat Username="@username" />
+}
+else
+{
+    <Login OnLogin="OnLogin" />
+}
+
+@code {
+    private bool isLoggedIn;
+    private string username;
+
+    private void OnLogin(string username)
+    {
+        this.username = username;
+        isLoggedIn = true;
+    }
+}
