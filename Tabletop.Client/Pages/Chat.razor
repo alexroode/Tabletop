@@ -8,7 +8,7 @@
         <ul class="list-unstyled mx-3">
             @foreach (var message in messages)
             {
-                <li>@message</li>
+                <li><span class="badge bg-primary">@message.Date.ToString("yyyy-MM-dd HH:mm")</span> <span class="message-author">@message.Author</span> @message.Text</li>
             }
         </ul>
     </div>
@@ -22,7 +22,7 @@
 @code {
     [Parameter] public string Username { get; set; }
     private HubConnection hubConnection;
-    private List<string> messages = new List<string>();
+    private List<ChatMessage> messages = new();
     private string messageInput;
 
     protected override async Task OnInitializedAsync()
@@ -31,17 +31,15 @@
             .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
             .Build();
 
-        hubConnection.On<string, string>("ReceiveMessage", async (user, message) =>
+        hubConnection.On<ChatMessage>("ReceiveMessage", async message =>
         {
-            var encodedMsg = $"{user}: {message}";
-            messages.Add(encodedMsg);
+            messages.Add(message);
             await MessagesUpdated();
         });
 
         hubConnection.On<List<ChatMessage>>("ReceiveMessages", async receivedMessages =>
         {
-            var encoded = receivedMessages.Select(m => $"{m.Author}: {m.Text}");
-            messages.AddRange(encoded);
+            messages.AddRange(receivedMessages);
             await MessagesUpdated();
         });
 
@@ -50,7 +48,6 @@
 
     async Task MessagesUpdated()
     {
-        //var wasScrolledToBottom = true;
         var wasScrolledToBottom = await IsScrolledToBottom();
         StateHasChanged();
 

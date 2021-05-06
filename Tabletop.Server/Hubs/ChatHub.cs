@@ -16,10 +16,11 @@ namespace Tabletop.Server.Hubs
             _chatService = chatService;
         }
 
-        public async Task SendMessage(string user, string message)
+        public async Task SendMessage(string user, string messageText)
         {
-            _chatService.AddMessage(new ChatMessage() { Author = user, Text = message });
-            await Clients.All.SendAsync("ReceiveMessage", user, message);
+            var message = new ChatMessage() { Date = DateTime.UtcNow, Author = user, Text = messageText };
+            _chatService.AddMessage(message);
+            await Clients.All.SendAsync("ReceiveMessage", message);
         }
 
         public override async Task OnConnectedAsync()
