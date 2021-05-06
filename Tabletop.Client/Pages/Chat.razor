@@ -2,22 +2,21 @@
 @inject NavigationManager NavigationManager
 @implements IAsyncDisposable
 
-<div class="form-group">
-    <label>
-        Message:
-        <input @bind="messageInput" size="50" />
-    </label>
+<div class="chat-container bg-light d-flex flex-column">
+    <div class="scroller flex-grow-1">
+        <ul class="list-unstyled mx-3">
+            @foreach (var message in messages)
+            {
+                <li>@message</li>
+            }
+        </ul>
+    </div>
+
+    <form class="d-flex" @onsubmit="Send">
+        <input @bind="messageInput" @bind:event="oninput" class="form-control flex-grow-1" />
+        <button type="submit" disabled="@(!CanSend)" class="btn btn-primary">Send</button>
+    </form>
 </div>
-<button @onclick="Send" disabled="@(!IsConnected)" class="btn btn-primary">Send</button>
-
-<hr>
-
-<ul id="messagesList">
-    @foreach (var message in messages)
-    {
-        <li>@message</li>
-    }
-</ul>
 
 @code {
     [Parameter] public string Username { get; set; }
@@ -48,8 +47,18 @@
         await hubConnection.StartAsync();
     }
 
-    async Task Send() =>
+    async Task Send()
+    {
+        if (!CanSend)
+        {
+            return;
+        }
+
         await hubConnection.SendAsync("SendMessage", Username, messageInput);
+        messageInput = "";
+    }
+
+    public bool CanSend => IsConnected && !string.IsNullOrEmpty(messageInput);
 
     public bool IsConnected =>
         hubConnection.State == HubConnectionState.Connected;

@@ -2,12 +2,18 @@
 
 @if (isLoggedIn)
 {
-    <p>Logged in as <strong>@username</strong></p>
-    <Chat Username="@username" />
+    <div class="main p-4">
+        <p>Logged in as <strong>@username</strong></p>
+        <div class="chat-container">
+            <Chat Username="@username" />
+        </div>
+    </div>
 }
 else
 {
-    <Login OnLogin="OnLogin" />
+    <div class="p-4">
+        <Login OnLogin="OnLogin" />
+    </div>
 }
 
 @code {
