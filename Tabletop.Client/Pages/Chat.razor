@@ -1,9 +1,10 @@
 ﻿@using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JS
 @implements IAsyncDisposable
 
 <div class="chat-container bg-light d-flex flex-column">
-    <div class="scroller flex-grow-1">
+    <div class="scroller flex-grow-1" id="chat-scroller">
         <ul class="list-unstyled mx-3">
             @foreach (var message in messages)
             {
@@ -30,21 +31,33 @@
             .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
             .Build();
 
-        hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+        hubConnection.On<string, string>("ReceiveMessage", async (user, message) =>
         {
             var encodedMsg = $"{user}: {message}";
             messages.Add(encodedMsg);
-            StateHasChanged();
+            await MessagesUpdated();
         });
 
-        hubConnection.On<List<ChatMessage>>("ReceiveMessages", receivedMessages =>
+        hubConnection.On<List<ChatMessage>>("ReceiveMessages", async receivedMessages =>
         {
             var encoded = receivedMessages.Select(m => $"{m.Author}: {m.Text}");
             messages.AddRange(encoded);
-            StateHasChanged();
+            await MessagesUpdated();
         });
 
         await hubConnection.StartAsync();
+    }
+
+    async Task MessagesUpdated()
+    {
+        //var wasScrolledToBottom = true;
+        var wasScrolledToBottom = await IsScrolledToBottom();
+        StateHasChanged();
+
+        if (wasScrolledToBottom)
+        {
+            await ScrollToBottom();
+        }
     }
 
     async Task Send()
@@ -66,5 +79,15 @@
     public async ValueTask DisposeAsync()
     {
         await hubConnection.DisposeAsync();
+    }
+
+    async Task<bool> IsScrolledToBottom()
+    {
+        return await JS.InvokeAsync<bool>("isChatScrolledToBottom");
+    }
+
+    async Task ScrollToBottom()
+    {
+        await JS.InvokeVoidAsync("scrollChatToBottom");
     }
 }
