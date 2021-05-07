@@ -7,17 +7,30 @@
     @if (IsConnected)
     {
         <div class="users-list mx-3">
-            <span class="fw-bold me-3">Users here: </span>
+            <span class="fw-bold me-2">Users here: </span>
             @foreach (var username in activeUsers)
             {
-                <span class="me-3">@username</span>
+                <span class="me-2">@username</span>
             }
         </div>
         <div class="scroller flex-grow-1" id="chat-scroller">
             <ul class="list-unstyled mx-3">
                 @foreach (var message in messages)
                 {
-                    <li><span class="badge bg-primary">@message.Date.ToString("yyyy-MM-dd HH:mm")</span> <span class="message-author">@message.Author</span> @message.Text</li>
+                    <li>
+                        <span class="badge bg-primary me-2">@message.Date.ToString("yyyy-MM-dd HH:mm")</span> 
+                        @if (!message.System)
+                        {
+                            <span class="message-author me-2">@message.Author</span>
+                            @message.Text
+                        }
+                        else
+                        {
+                            <span class="fst-italic">
+                                @message.Text
+                            </span>
+                        }
+                    </li>
                 }
             </ul>
         </div>
@@ -71,16 +84,18 @@
             await MessagesUpdated();
         });
 
-        hubConnection.On<string>("UserJoined", username =>
+        hubConnection.On<string>("UserJoined", async username =>
         {
             activeUsers.Add(username);
-            StateHasChanged();
+            messages.Add(new ChatMessage() { Date = DateTimeOffset.UtcNow, Text = $"{username} has joined the chat", System = true });
+            await MessagesUpdated();
         });
 
-        hubConnection.On<string>("UserLeft", username =>
+        hubConnection.On<string>("UserLeft", async username =>
         {
             activeUsers.Remove(username);
-            StateHasChanged();
+            messages.Add(new ChatMessage() { Date = DateTimeOffset.UtcNow, Text = $"{username} has left the chat", System = true });
+            await MessagesUpdated();
         });
 
         hubConnection.On<List<string>>("CurrentUsers", usernames =>
