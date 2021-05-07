@@ -1,4 +1,4 @@
-﻿<div class="login-form container bg-light py-4">
+﻿<form class="login-form container bg-light py-4" @onsubmit="Submit">
     <h3>Log In</h3>
 
     <div class="mb-3">
@@ -6,13 +6,13 @@
         <input class="form-control" id="username" @bind="username" @bind:event="oninput" />
     </div>
 
-    <button @onclick="OnLoginClick" disabled="@isDisabled" class="btn btn-primary w-100">Log In</button>
-</div>
+    <button type="submit" disabled="@isDisabled" class="btn btn-primary w-100">Log In</button>
+</form>
 
 @code {
     private string username;
     [Parameter] public EventCallback<string> OnLogin { get; set; }
-    async Task OnLoginClick()
+    async Task Submit()
     {
         await OnLogin.InvokeAsync(username);
     }
