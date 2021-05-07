@@ -4,25 +4,53 @@
 @implements IAsyncDisposable
 
 <div class="chat-container bg-light d-flex flex-column">
-    <div class="scroller flex-grow-1" id="chat-scroller">
-        <ul class="list-unstyled mx-3">
-            @foreach (var message in messages)
+    @if (IsConnected)
+    {
+        <div class="users-list mx-3">
+            <span class="fw-bold me-3">Users here: </span>
+            @foreach (var username in activeUsers)
             {
-                <li><span class="badge bg-primary">@message.Date.ToString("yyyy-MM-dd HH:mm")</span> <span class="message-author">@message.Author</span> @message.Text</li>
+                <span class="me-3">@username</span>
             }
-        </ul>
-    </div>
+        </div>
+        <div class="scroller flex-grow-1" id="chat-scroller">
+            <ul class="list-unstyled mx-3">
+                @foreach (var message in messages)
+                {
+                    <li><span class="badge bg-primary">@message.Date.ToString("yyyy-MM-dd HH:mm")</span> <span class="message-author">@message.Author</span> @message.Text</li>
+                }
+            </ul>
+        </div>
 
-    <form class="d-flex" @onsubmit="Send">
-        <input @bind="messageInput" @bind:event="oninput" class="form-control flex-grow-1" />
-        <button type="submit" disabled="@(!CanSend)" class="btn btn-primary">Send</button>
-    </form>
+        <form class="d-flex" @onsubmit="Send">
+            <input @bind="messageInput" @bind:event="oninput" class="form-control flex-grow-1" />
+            <button type="submit" disabled="@(!CanSend)" class="btn btn-primary">Send</button>
+        </form>
+    }
+    else
+    {
+        <div class="p-3">
+            @if (hubConnection.State == HubConnectionState.Connecting)
+            {
+                <span>Connecting...</span>
+            }
+            else if (hubConnection.State == HubConnectionState.Reconnecting)
+            {
+                <span>Reconnecting...</span>
+            }
+            else
+            {
+                <span class="text-danger">Not connected</span>
+            }
+        </div>
+    }
 </div>
 
 @code {
     [Parameter] public string Username { get; set; }
     private HubConnection hubConnection;
     private List<ChatMessage> messages = new();
+    private List<string> activeUsers = new List<string>();
     private string messageInput;
 
     protected override async Task OnInitializedAsync()
@@ -43,7 +71,26 @@
             await MessagesUpdated();
         });
 
+        hubConnection.On<string>("UserJoined", username =>
+        {
+            activeUsers.Add(username);
+            StateHasChanged();
+        });
+
+        hubConnection.On<string>("UserLeft", username =>
+        {
+            activeUsers.Remove(username);
+            StateHasChanged();
+        });
+
+        hubConnection.On<List<string>>("CurrentUsers", usernames =>
+        {
+            activeUsers.AddRange(usernames);
+            StateHasChanged();
+        });
+
         await hubConnection.StartAsync();
+        await hubConnection.SendAsync("JoinChat", Username);
     }
 
     async Task MessagesUpdated()

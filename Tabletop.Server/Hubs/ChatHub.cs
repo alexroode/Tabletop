@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tabletop.Core.Chat;
 
+#nullable enable
 namespace Tabletop.Server.Hubs
 {
     public class ChatHub : Hub
@@ -23,11 +24,33 @@ namespace Tabletop.Server.Hubs
             await Clients.All.SendAsync("ReceiveMessage", message);
         }
 
+        public async Task JoinChat(string username)
+        {
+            var connectionId = Context.ConnectionId;
+            _chatService.AddActiveUser(connectionId, username);
+            await Clients.All.SendAsync("UserJoined", username);
+        }
+
         public override async Task OnConnectedAsync()
         {
             var messages = _chatService.GetLatestMessages();
             await Clients.Caller.SendAsync("ReceiveMessages", messages);
+
+            var users = _chatService.GetActiveUsers();
+            await Clients.Caller.SendAsync("CurrentUsers", users);
+
             await base.OnConnectedAsync();
+        }
+
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            var username = _chatService.RemoveActiveUser(Context.ConnectionId);
+            if (username != null)
+            {
+                await Clients.Others.SendAsync("UserLeft", username);
+            }
+
+            await base.OnDisconnectedAsync(exception);
         }
     }
 }
