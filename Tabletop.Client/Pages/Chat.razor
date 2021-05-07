@@ -36,7 +36,7 @@
         </div>
 
         <form class="d-flex" @onsubmit="Send">
-            <input @bind="messageInput" @bind:event="oninput" class="form-control flex-grow-1" />
+            <input @bind="messageInput" @bind:event="oninput" class="form-control flex-grow-1" maxlength="@Constants.MaxMessageLength" />
             <button type="submit" disabled="@(!CanSend)" class="btn btn-primary">Send</button>
         </form>
     }

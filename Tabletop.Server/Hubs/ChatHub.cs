@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Tabletop.Core;
 using Tabletop.Core.Chat;
 
 #nullable enable
@@ -19,6 +20,11 @@ namespace Tabletop.Server.Hubs
 
         public async Task SendMessage(string user, string messageText)
         {
+            if (messageText.Length > Constants.MaxMessageLength)
+            {
+                return;
+            }
+
             var message = new ChatMessage() { Date = DateTime.UtcNow, Author = user, Text = messageText };
             _chatService.AddMessage(message);
             await Clients.All.SendAsync("ReceiveMessage", message);
