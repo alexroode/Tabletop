@@ -32,11 +32,12 @@ namespace Tabletop.Server.Hubs
             await Clients.All.SendAsync("ReceiveMessage", message);
         }
 
-        public async Task JoinChat(string username)
+        public async Task JoinChat()
         {
             var connectionId = Context.ConnectionId;
-            _chatService.AddActiveUser(connectionId, username);
-            await Clients.All.SendAsync("UserJoined", username);
+            var user = new User() { DisplayName = Context.User!.Identity!.Name, Id = Context.UserIdentifier };
+            _chatService.AddActiveUser(connectionId, user);
+            await Clients.All.SendAsync("UserJoined", user);
         }
 
         public override async Task OnConnectedAsync()
@@ -52,10 +53,10 @@ namespace Tabletop.Server.Hubs
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            var username = _chatService.RemoveActiveUser(Context.ConnectionId);
-            if (username != null)
+            var user = _chatService.RemoveActiveUser(Context.ConnectionId);
+            if (user != null)
             {
-                await Clients.Others.SendAsync("UserLeft", username);
+                await Clients.Others.SendAsync("UserLeft", user);
             }
 
             await base.OnDisconnectedAsync(exception);

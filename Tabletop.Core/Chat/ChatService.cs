@@ -10,7 +10,7 @@ namespace Tabletop.Core.Chat
         private const int _latestMessageCount = 50;
 
         private readonly List<ChatMessage> _messages = new();
-        private readonly Dictionary<string, string> _activeUsers = new();
+        private readonly Dictionary<string, User> _activeUsers = new();
 
         public List<ChatMessage> GetLatestMessages()
         {
@@ -21,23 +21,23 @@ namespace Tabletop.Core.Chat
         {
             _messages.Add(message);
         }
-        public List<string> GetActiveUsers()
+        public List<User> GetActiveUsers()
         {
             return _activeUsers.Values.ToList();
         }
 
-        public void AddActiveUser(string connectionId, string username)
+        public void AddActiveUser(string connectionId, User user)
         {
-            _activeUsers[connectionId] = username;
+            _activeUsers[connectionId] = user;
         }
 
-        public string? RemoveActiveUser(string connectionId)
+        public User? RemoveActiveUser(string connectionId)
         {
             if (_activeUsers.ContainsKey(connectionId))
             {
-                var username = _activeUsers[connectionId];
+                var user = _activeUsers[connectionId];
                 _activeUsers.Remove(connectionId);
-                return username;
+                return user;
             }
             return null;
         }

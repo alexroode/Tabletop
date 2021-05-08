@@ -8,9 +8,9 @@
     {
         <div class="users-list mx-3">
             <span class="fw-bold me-2">Users here: </span>
-            @foreach (var username in activeUsers)
+            @foreach (var user in activeUsers)
             {
-                <span class="me-2">@username</span>
+                <span class="me-2">@user.DisplayName</span>
             }
         </div>
         <div class="scroller flex-grow-1" id="chat-scroller">
@@ -65,7 +65,7 @@
 
     private HubConnection hubConnection;
     private List<ChatMessage> messages = new();
-    private List<string> activeUsers = new List<string>();
+    private List<User> activeUsers = new();
     private string messageInput;
 
     protected override async Task OnInitializedAsync()
@@ -97,28 +97,33 @@
             await MessagesUpdated();
         });
 
-        hubConnection.On<string>("UserJoined", async username =>
+        hubConnection.On<User>("UserJoined", async user =>
         {
-            activeUsers.Add(username);
-            messages.Add(new ChatMessage() { Date = DateTimeOffset.UtcNow, Text = $"{username} has joined the chat", System = true });
+            activeUsers.Add(user);
+            messages.Add(new ChatMessage() { Date = DateTimeOffset.UtcNow, Text = $"{user.DisplayName} has joined the chat", System = true });
             await MessagesUpdated();
         });
 
-        hubConnection.On<string>("UserLeft", async username =>
+        hubConnection.On<User>("UserLeft", async user =>
         {
-            activeUsers.Remove(username);
-            messages.Add(new ChatMessage() { Date = DateTimeOffset.UtcNow, Text = $"{username} has left the chat", System = true });
+            var existingUser = activeUsers.FirstOrDefault(u => u.Id == user.Id);
+            if (existingUser != null)
+            {
+                activeUsers.Remove(existingUser);
+            }
+
+            messages.Add(new ChatMessage() { Date = DateTimeOffset.UtcNow, Text = $"{user.DisplayName} has left the chat", System = true });
             await MessagesUpdated();
         });
 
-        hubConnection.On<List<string>>("CurrentUsers", usernames =>
+        hubConnection.On<List<User>>("CurrentUsers", users =>
         {
-            activeUsers.AddRange(usernames);
+            activeUsers.AddRange(users);
             StateHasChanged();
         });
 
         await hubConnection.StartAsync();
-        await hubConnection.SendAsync("JoinChat", username);
+        await hubConnection.SendAsync("JoinChat");
     }
 
     async Task MessagesUpdated()
