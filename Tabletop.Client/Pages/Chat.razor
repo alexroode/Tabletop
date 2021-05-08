@@ -60,7 +60,9 @@
 </div>
 
 @code {
-    [Parameter] public string Username { get; set; }
+    [CascadingParameter] Task<AuthenticationState> authenticationStateTask { get; set; }
+    [Inject] Microsoft.AspNetCore.Components.WebAssembly.Authentication.IAccessTokenProvider tokenProvider { get; set; }
+
     private HubConnection hubConnection;
     private List<ChatMessage> messages = new();
     private List<string> activeUsers = new List<string>();
@@ -68,8 +70,19 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await authenticationStateTask;
+        var username = authState.User.Identity.Name;
+
         hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+            .WithUrl(NavigationManager.ToAbsoluteUri("/hubs/chat"), options =>
+            {
+                options.AccessTokenProvider = async () =>
+                {
+                    var accessTokenResult = await tokenProvider.RequestAccessToken();
+                    accessTokenResult.TryGetToken(out var accessToken);
+                    return accessToken.Value;
+                };
+            })
             .Build();
 
         hubConnection.On<ChatMessage>("ReceiveMessage", async message =>
@@ -105,7 +118,7 @@
         });
 
         await hubConnection.StartAsync();
-        await hubConnection.SendAsync("JoinChat", Username);
+        await hubConnection.SendAsync("JoinChat", username);
     }
 
     async Task MessagesUpdated()
@@ -126,7 +139,7 @@
             return;
         }
 
-        await hubConnection.SendAsync("SendMessage", Username, messageInput);
+        await hubConnection.SendAsync("SendMessage", messageInput);
         messageInput = "";
     }
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ using Tabletop.Core.Chat;
 #nullable enable
 namespace Tabletop.Server.Hubs
 {
+    [Authorize]
     public class ChatHub : Hub
     {
         private readonly ChatService _chatService;
@@ -18,14 +20,14 @@ namespace Tabletop.Server.Hubs
             _chatService = chatService;
         }
 
-        public async Task SendMessage(string user, string messageText)
+        public async Task SendMessage(string messageText)
         {
             if (messageText.Length > Constants.MaxMessageLength)
             {
                 return;
             }
 
-            var message = new ChatMessage() { Date = DateTime.UtcNow, Author = user, Text = messageText };
+            var message = new ChatMessage() { Date = DateTime.UtcNow, Author = Context.User!.Identity!.Name, Text = messageText };
             _chatService.AddMessage(message);
             await Clients.All.SendAsync("ReceiveMessage", message);
         }

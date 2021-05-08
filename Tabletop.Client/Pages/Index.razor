@@ -1,20 +1,25 @@
 ﻿@page "/"
+@attribute [Authorize]
 
-@if (isLoggedIn)
-{
-    <div class="main p-4">
-        <p>Logged in as <strong>@username</strong></p>
-        <Chat Username="@username" />
-    </div>
-}
-else
-{
-    <div class="p-4">
-        <Login OnLogin="OnLogin" />
-    </div>
-}
+<div class="main p-4">
+    <AuthorizeView>
+        <Authorized>
+            <Chat />
+        </Authorized>
+    </AuthorizeView>
+</div>
 
 @code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationStateTask;
+        var user = authState.User;
+        await base.OnInitializedAsync();
+    }
+
     private bool isLoggedIn;
     private string username;
 
