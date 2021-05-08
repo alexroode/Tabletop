@@ -21,9 +21,10 @@ namespace Tabletop.Core.Chat
         {
             _messages.Add(message);
         }
+
         public List<User> GetActiveUsers()
         {
-            return _activeUsers.Values.ToList();
+            return _activeUsers.Values.GroupBy(p => p.Id).Select(g => g.First()).ToList();
         }
 
         public void AddActiveUser(string connectionId, User user)
@@ -37,7 +38,12 @@ namespace Tabletop.Core.Chat
             {
                 var user = _activeUsers[connectionId];
                 _activeUsers.Remove(connectionId);
-                return user;
+
+                // If there are no other connections containing the same user, the user has really left
+                if (!_activeUsers.Any(u => u.Value.Id == user.Id))
+                {
+                    return user;
+                }
             }
             return null;
         }

@@ -10,8 +10,17 @@ using Tabletop.Core.Chat;
 #nullable enable
 namespace Tabletop.Server.Hubs
 {
+    public interface IChatClient
+    {
+        Task ReceiveMessage(ChatMessage message);
+        Task UserJoined(User user);
+        Task UserLeft(User user);
+        Task UpdateMessages(IList<ChatMessage> messages);
+        Task UpdateUsers(IList<User> user);
+    }
+
     [Authorize]
-    public class ChatHub : Hub
+    public class ChatHub : Hub<IChatClient>
     {
         private readonly ChatService _chatService;
 
@@ -29,7 +38,7 @@ namespace Tabletop.Server.Hubs
 
             var message = new ChatMessage() { Date = DateTime.UtcNow, Author = Context.User!.Identity!.Name, Text = messageText };
             _chatService.AddMessage(message);
-            await Clients.All.SendAsync("ReceiveMessage", message);
+            await Clients.All.ReceiveMessage(message);
         }
 
         public async Task JoinChat()
@@ -37,16 +46,16 @@ namespace Tabletop.Server.Hubs
             var connectionId = Context.ConnectionId;
             var user = new User() { DisplayName = Context.User!.Identity!.Name, Id = Context.UserIdentifier };
             _chatService.AddActiveUser(connectionId, user);
-            await Clients.All.SendAsync("UserJoined", user);
+            await Clients.All.UserJoined(user);
         }
 
         public override async Task OnConnectedAsync()
         {
             var messages = _chatService.GetLatestMessages();
-            await Clients.Caller.SendAsync("ReceiveMessages", messages);
+            await Clients.Caller.UpdateMessages(messages);
 
             var users = _chatService.GetActiveUsers();
-            await Clients.Caller.SendAsync("CurrentUsers", users);
+            await Clients.Caller.UpdateUsers(users);
 
             await base.OnConnectedAsync();
         }
@@ -56,7 +65,7 @@ namespace Tabletop.Server.Hubs
             var user = _chatService.RemoveActiveUser(Context.ConnectionId);
             if (user != null)
             {
-                await Clients.Others.SendAsync("UserLeft", user);
+                await Clients.Others.UserLeft(user);
             }
 
             await base.OnDisconnectedAsync(exception);

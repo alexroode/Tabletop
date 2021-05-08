@@ -91,14 +91,12 @@
             await MessagesUpdated();
         });
 
-        hubConnection.On<List<ChatMessage>>("ReceiveMessages", async receivedMessages =>
-        {
-            messages.AddRange(receivedMessages);
-            await MessagesUpdated();
-        });
-
         hubConnection.On<User>("UserJoined", async user =>
         {
+            if (activeUsers.Any(u => u.Id == user.Id))
+            {
+                return;
+            }
             activeUsers.Add(user);
             messages.Add(new ChatMessage() { Date = DateTimeOffset.UtcNow, Text = $"{user.DisplayName} has joined the chat", System = true });
             await MessagesUpdated();
@@ -116,8 +114,16 @@
             await MessagesUpdated();
         });
 
-        hubConnection.On<List<User>>("CurrentUsers", users =>
+        hubConnection.On<List<ChatMessage>>("UpdateMessages", async receivedMessages =>
         {
+            messages.Clear();
+            messages.AddRange(receivedMessages);
+            await MessagesUpdated();
+        });
+
+        hubConnection.On<List<User>>("UpdateUsers", users =>
+        {
+            activeUsers.Clear();
             activeUsers.AddRange(users);
             StateHasChanged();
         });
