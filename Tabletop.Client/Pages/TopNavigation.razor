@@ -6,12 +6,19 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">Tabletop</a>
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+                <NavLink class="nav-link" href="/tables">
+                    Tables
+                </NavLink>
+            </li>
+        </ul>
         <AuthorizeView>
             <Authorized>
-                <div class="navbar-text ms-auto">
+                <div class="navbar-text">
                     @context.User.Identity.Name
                 </div>
-                <button class="nav-link btn btn-link" @onclick="BeginSignOut">
+                <button class="btn btn-link" @onclick="BeginSignOut">
                     Log out
                 </button>
             </Authorized>

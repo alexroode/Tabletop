@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tabletop.Core;
 using Tabletop.Core.Chat;
+using Tabletop.Core.Games;
 using Tabletop.Server.Hubs;
 
 namespace Tabletop.Server
@@ -46,6 +47,7 @@ namespace Tabletop.Server
                     };
                 });
             services.AddSingleton<ChatService>();
+            services.AddSingleton<TableService>();
 
             services.AddSignalR();
             services.AddControllersWithViews();
@@ -87,6 +89,7 @@ namespace Tabletop.Server
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
                 endpoints.MapHub<ChatHub>("/hubs/chat");
+                endpoints.MapHub<TableHub>("/hubs/table");
                 endpoints.MapFallbackToFile("index.html");
             });
         }

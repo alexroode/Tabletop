@@ -1,13 +1,4 @@
 ﻿@page "/"
-@attribute [Authorize]
-
-<div class="main p-4">
-    <AuthorizeView>
-        <Authorized>
-            <Chat />
-        </Authorized>
-    </AuthorizeView>
-</div>
 
 @code {
     [CascadingParameter]
@@ -18,14 +9,5 @@
         var authState = await authenticationStateTask;
         var user = authState.User;
         await base.OnInitializedAsync();
-    }
-
-    private bool isLoggedIn;
-    private string username;
-
-    private void OnLogin(string username)
-    {
-        this.username = username;
-        isLoggedIn = true;
     }
 }

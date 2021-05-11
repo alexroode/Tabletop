@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tabletop.Client", "Tabletop
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tabletop.Core", "Tabletop.Core\Tabletop.Core.csproj", "{A0D6227F-3109-462C-9F98-951966D3AD41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tabletop.Tests", "Tabletop.Tests\Tabletop.Tests.csproj", "{B89E35E1-4F00-4AFB-A18B-98B9C83C5E65}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tabletop.Tests", "Tabletop.Tests\Tabletop.Tests.csproj", "{B89E35E1-4F00-4AFB-A18B-98B9C83C5E65}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
