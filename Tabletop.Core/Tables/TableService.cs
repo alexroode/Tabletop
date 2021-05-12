@@ -40,7 +40,7 @@ namespace Tabletop.Core.Tables
             var playersAtTable = _playerMapping[id];
             if (!playersAtTable.ContainsKey(connectionId))
             {
-                var maxPlayerId = playersAtTable.Max(t => t.Value);
+                var maxPlayerId = playersAtTable.Any() ? playersAtTable.Max(t => t.Value) : 0;
                 playersAtTable[connectionId] = maxPlayerId + 1;
             }
 

@@ -7,7 +7,7 @@ using Tabletop.Core.Tables;
 
 namespace Tabletop.Server.Hubs
 {
-    public interface ITableClient
+    public interface ITableListClient
     {
         Task OwnTableCreated();
         Task JoinTable(Table table, int playerAssignment);
@@ -16,7 +16,7 @@ namespace Tabletop.Server.Hubs
         Task TableRemoved(Table table);
     }
 
-    public class TableListHub : Hub<ITableClient>
+    public class TableListHub : Hub<ITableListClient>
     {
         private readonly TableService _tableService;
 
@@ -32,11 +32,11 @@ namespace Tabletop.Server.Hubs
 
             await Clients.Caller.OwnTableCreated();
 
-            var playerAssignment = _tableService.JoinTable(table.Id, Context.ConnectionId);
+            /*var playerAssignment = _tableService.JoinTable(table.Id, Context.ConnectionId);
             if (playerAssignment != null)
             {
                 await Clients.Caller.JoinTable(table, playerAssignment.Value);
-            }
+            }*/
         }
 
         public override async Task OnConnectedAsync()

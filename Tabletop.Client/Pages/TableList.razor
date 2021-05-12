@@ -1,7 +1,7 @@
 ﻿@page "/tables"
-@using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager NavigationManager
 @inject ClientTableService TableService
+@implements IAsyncDisposable
 
 <h1>Table List</h1>
 
@@ -68,7 +68,6 @@
         });
 
         await hubConnection.StartAsync();
-        await hubConnection.SendAsync("JoinChat");
     }
 
     async Task CreateTable()

@@ -90,6 +90,7 @@ namespace Tabletop.Server
                 endpoints.MapControllers();
                 endpoints.MapHub<ChatHub>("/hubs/chat");
                 endpoints.MapHub<TableListHub>("/hubs/table-list");
+                endpoints.MapHub<TableHub>("/hubs/table");
                 endpoints.MapFallbackToFile("index.html");
             });
         }

@@ -1,5 +1,7 @@
 ﻿@page "/table/{tableid}"
+@inject NavigationManager NavigationManager
 @inject ClientTableService tableService
+@implements IAsyncDisposable
 
 @if (isLoading)
 {
@@ -16,12 +18,21 @@ else
     <p>
         @table.Game
     </p>
+
+    <div>
+        @foreach (var user in Users)
+        {
+            <p>@user</p>
+        }
+    </div>
 }
 
 @code {
     [Parameter]
     public string TableId { get; set; }
 
+    private List<string> Users = new();
+    private HubConnection hubConnection;
     private bool isLoading = true;
 
     private Tabletop.Core.Tables.Table table;
@@ -30,6 +41,28 @@ else
     {
         table = await tableService.GetTableAsync(TableId);
         isLoading = false;
+
+        if (table != null)
+        {
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl(NavigationManager.ToAbsoluteUri("/hubs/table"))
+                .Build();
+
+            hubConnection.On<string>("UserJoined", user =>
+            {
+                Users.Add(user);
+                StateHasChanged();
+            });
+
+            await hubConnection.StartAsync();
+            await hubConnection.SendAsync("JoinTable", TableId);
+        }
+
         await base.OnInitializedAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await hubConnection.DisposeAsync();
     }
 }
