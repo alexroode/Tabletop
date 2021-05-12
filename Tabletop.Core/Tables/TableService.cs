@@ -4,7 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Tabletop.Core.Games
+#nullable enable
+namespace Tabletop.Core.Tables
 {
     public class TableService
     {
@@ -27,6 +28,11 @@ namespace Tabletop.Core.Games
         public List<Table> GetAllTables()
         {
             return _tables.Values.ToList();
+        }
+
+        public Table? GetTable(string id)
+        {
+            return _tables.GetValueOrDefault(id);
         }
 
         public int? JoinTable(string id, string connectionId)

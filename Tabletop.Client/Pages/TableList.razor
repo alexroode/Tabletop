@@ -1,17 +1,18 @@
 ﻿@page "/tables"
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager NavigationManager
+@inject ClientTableService TableService
 
 <h1>Table List</h1>
 
 <div class="d-flex flex-wrap mb-3">
     @foreach (var table in tables)
     {
-    <div class="table-list-table p-3 me-3 mb-3 bg-light rounded">
-        <div class="fw-bold">@table.Name</div>
-        <div class="mb-3">@table.Game</div>
-        <button class="btn btn-primary">Join</button>
-    </div>
+        <div class="table-list-table p-3 me-3 mb-3 bg-light rounded">
+            <div class="fw-bold"><NavLink href="@("/table/" + table.Id)">@table.Name</NavLink></div>
+            <div class="mb-3">@table.Game</div>
+            <button class="btn btn-primary">Join</button>
+        </div>
     }
 </div>
 
@@ -34,7 +35,7 @@
     private bool isCreatingTable;
 
     private HubConnection hubConnection;
-    private List<Table> tables = new();
+    private List<Tabletop.Core.Tables.Table> tables = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -42,15 +43,17 @@
             .WithUrl(NavigationManager.ToAbsoluteUri("/hubs/table"))
             .Build();
 
-        hubConnection.On<Table>("TableCreated", table =>
+        hubConnection.On<Tabletop.Core.Tables.Table>("TableCreated", table =>
         {
+            TableService.CacheTable(table);
             tables.Add(table);
             StateHasChanged();
         });
 
-        hubConnection.On<List<Table>>("UpdateTables", updatedTables =>
+        hubConnection.On<List<Tabletop.Core.Tables.Table>>("UpdateTables", updatedTables =>
         {
             tables.Clear();
+            TableService.CacheTables(updatedTables);
             tables.AddRange(updatedTables);
             StateHasChanged();
         });

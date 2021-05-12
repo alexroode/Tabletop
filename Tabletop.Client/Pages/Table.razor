@@ -1,0 +1,35 @@
+﻿@page "/table/{tableid}"
+@inject ClientTableService tableService
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else if (table == null)
+{
+    <p>Not found</p>
+}
+else
+{
+    <h3>@table.Name</h3>
+
+    <p>
+        @table.Game
+    </p>
+}
+
+@code {
+    [Parameter]
+    public string TableId { get; set; }
+
+    private bool isLoading = true;
+
+    private Tabletop.Core.Tables.Table table;
+
+    protected override async Task OnInitializedAsync()
+    {
+        table = await tableService.GetTableAsync(TableId);
+        isLoading = false;
+        await base.OnInitializedAsync();
+    }
+}

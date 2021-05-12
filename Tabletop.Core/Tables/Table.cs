@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Tabletop.Core.Games
+namespace Tabletop.Core.Tables
 {
     public class Table
     {

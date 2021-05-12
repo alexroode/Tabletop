@@ -10,7 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tabletop.Core;
 using Tabletop.Core.Chat;
-using Tabletop.Core.Games;
+using Tabletop.Core.Tables;
 using Tabletop.Server.Hubs;
 
 namespace Tabletop.Server
