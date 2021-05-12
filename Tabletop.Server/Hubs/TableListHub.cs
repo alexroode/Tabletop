@@ -16,11 +16,11 @@ namespace Tabletop.Server.Hubs
         Task TableRemoved(Table table);
     }
 
-    public class TableHub : Hub<ITableClient>
+    public class TableListHub : Hub<ITableClient>
     {
         private readonly TableService _tableService;
 
-        public TableHub(TableService tableService)
+        public TableListHub(TableService tableService)
         {
             _tableService = tableService;
         }

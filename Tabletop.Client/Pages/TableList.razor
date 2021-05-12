@@ -40,7 +40,7 @@
     protected override async Task OnInitializedAsync()
     {
         hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/hubs/table"))
+            .WithUrl(NavigationManager.ToAbsoluteUri("/hubs/table-list"))
             .Build();
 
         hubConnection.On<Tabletop.Core.Tables.Table>("TableCreated", table =>
