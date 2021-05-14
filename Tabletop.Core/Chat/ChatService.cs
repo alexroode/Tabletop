@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Tabletop.Core.Users;
 
 #nullable enable
 namespace Tabletop.Core.Chat

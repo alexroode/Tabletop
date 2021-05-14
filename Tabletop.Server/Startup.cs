@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Tabletop.Core;
 using Tabletop.Core.Chat;
 using Tabletop.Core.Tables;
+using Tabletop.Core.Users;
 using Tabletop.Server.Hubs;
 
 namespace Tabletop.Server
@@ -48,6 +49,7 @@ namespace Tabletop.Server
                 });
             services.AddSingleton<ChatService>();
             services.AddSingleton<TableService>();
+            services.AddSingleton<UserService>();
 
             services.AddSignalR();
             services.AddControllersWithViews();

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tabletop.Core;
 using Tabletop.Core.Chat;
+using Tabletop.Core.Users;
 
 #nullable enable
 namespace Tabletop.Server.Hubs
@@ -23,10 +24,12 @@ namespace Tabletop.Server.Hubs
     public class ChatHub : Hub<IChatClient>
     {
         private readonly ChatService _chatService;
+        private readonly UserService _userService;
 
-        public ChatHub(ChatService chatService)
+        public ChatHub(ChatService chatService, UserService userService)
         {
             _chatService = chatService;
+            _userService = userService;
         }
 
         public async Task SendMessage(string messageText)
@@ -44,7 +47,7 @@ namespace Tabletop.Server.Hubs
         public async Task JoinChat()
         {
             var connectionId = Context.ConnectionId;
-            var user = new User() { DisplayName = Context.User!.Identity!.Name, Id = Context.UserIdentifier };
+            var user = _userService.GetOrAddUser(Context.User!);
             _chatService.AddActiveUser(connectionId, user);
             await Clients.All.UserJoined(user);
         }

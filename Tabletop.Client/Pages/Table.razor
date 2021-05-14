@@ -2,6 +2,7 @@
 @inject NavigationManager NavigationManager
 @inject ClientTableService tableService
 @implements IAsyncDisposable
+@attribute [Authorize]
 
 @if (isLoading)
 {
@@ -22,7 +23,11 @@ else
     <div>
         @foreach (var user in Users)
         {
-            <p>@user</p>
+            <p>@user.Key.DisplayName</p>
+            @if (user.Value.IsHost)
+            {
+                <p>Host</p>
+            }
         }
     </div>
 }
@@ -31,7 +36,7 @@ else
     [Parameter]
     public string TableId { get; set; }
 
-    private List<string> Users = new();
+    private Dictionary<User, TablePlayerMapping> Users = new();
     private HubConnection hubConnection;
     private bool isLoading = true;
 
@@ -48,9 +53,13 @@ else
                 .WithUrl(NavigationManager.ToAbsoluteUri("/hubs/table"))
                 .Build();
 
-            hubConnection.On<string>("UserJoined", user =>
+            hubConnection.On<Dictionary<User, TablePlayerMapping>>("UpdateUsers", users =>
             {
-                Users.Add(user);
+                Users.Clear();
+                foreach (var pair in users)
+                {
+                    Users[pair.Key] = pair.Value;
+                }
                 StateHasChanged();
             });
 

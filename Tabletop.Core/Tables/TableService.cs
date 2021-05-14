@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tabletop.Core.Users;
 
 #nullable enable
 namespace Tabletop.Core.Tables
@@ -10,7 +11,7 @@ namespace Tabletop.Core.Tables
     public class TableService
     {
         private readonly Dictionary<string, Table> _tables = new();
-        private readonly Dictionary<string, Dictionary<string, int>> _playerMapping = new();
+        private readonly Dictionary<string, Dictionary<User, TablePlayerMapping>> _playerMapping = new();
 
         public Table CreateTable(string name, string game)
         {
@@ -35,16 +36,22 @@ namespace Tabletop.Core.Tables
             return _tables.GetValueOrDefault(id);
         }
 
-        public int? JoinTable(string id, string connectionId)
+        public void JoinTable(string id, User user)
         {
             var playersAtTable = _playerMapping[id];
-            if (!playersAtTable.ContainsKey(connectionId))
+            if (!playersAtTable.ContainsKey(user))
             {
-                var maxPlayerId = playersAtTable.Any() ? playersAtTable.Max(t => t.Value) : 0;
-                playersAtTable[connectionId] = maxPlayerId + 1;
+                playersAtTable[user] = new()
+                {
+                    IsHost = playersAtTable.Count == 0,
+                    PlayerNumber = 0
+                };
             }
+        }
 
-            return playersAtTable[connectionId];
+        public Dictionary<User, TablePlayerMapping>? GetUsersAtTable(string id)
+        {
+            return _playerMapping.GetValueOrDefault(id);
         }
     }
 }

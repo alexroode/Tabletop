@@ -4,28 +4,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Tabletop.Core.Tables;
+using Tabletop.Core.Users;
 
 namespace Tabletop.Server.Hubs
 {
     public interface ITableClient
     {
-        Task UserJoined(string name);
+        Task UpdateUsers(Dictionary<User, TablePlayerMapping> users);
     }
 
     public class TableHub : Hub<ITableClient>
     {
         private readonly TableService _tableService;
+        private readonly UserService _userService;
 
-        public TableHub(TableService tableService)
+        public TableHub(TableService tableService, UserService userService)
         {
             _tableService = tableService;
+            _userService = userService;
         }
 
         public async Task JoinTable(string tableId)
         {
-            _tableService.JoinTable(tableId, Context.ConnectionId);
+            var user = _userService.GetOrAddUser(Context.User);
+
+            _tableService.JoinTable(tableId, user);
             await Groups.AddToGroupAsync(Context.ConnectionId, tableId);
-            await Clients.Group(tableId).UserJoined(Context.ConnectionId);
+
+            var tableUsers = _tableService.GetUsersAtTable(tableId);
+            await Clients.Group(tableId).UpdateUsers(tableUsers);
         }
 
         public override Task OnConnectedAsync()

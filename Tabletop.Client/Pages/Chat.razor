@@ -59,7 +59,6 @@
 </div>
 
 @code {
-    [CascadingParameter] Task<AuthenticationState> authenticationStateTask { get; set; }
     [Inject] Microsoft.AspNetCore.Components.WebAssembly.Authentication.IAccessTokenProvider tokenProvider { get; set; }
 
     private HubConnection hubConnection;
@@ -69,9 +68,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await authenticationStateTask;
-        var username = authState.User.Identity.Name;
-
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/hubs/chat"), options =>
             {
